@@ -9,7 +9,7 @@ var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read fr
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
-var _parentElement, _props, _SearchBar_instances, render_fn, addEventListeners_fn, _parentElement2, _props2, _Header_instances, render_fn2, renderSearchBar_fn, addEventListeners_fn2, _message, _parentElement3, _props3, _MoreMoviesButton_instances, render_fn3, addEventListeners_fn3, _movies, _MovieList_instances, posterImage_fn, _movie, _parentElement4, _page, _PopularMovieBoard_instances, renderInitialLayout_fn, fetchAndRenderMovies_fn, renderTopRatedMovie_fn, renderMovies_fn, movieData_fn, loadMoreMovies_fn, initMoreMoviesButton_fn, hideMoreMoviesButton_fn, _parentElement5, _props4, _page2, _SearchMovieBoard_instances, renderInitialLayout_fn2, fetchAndRenderMovies_fn2, renderMovies_fn2, movieData_fn2, loadMoreMovies_fn2, renderNoResult_fn, initMoreMoviesButton_fn2, hideMoreMoviesButton_fn2, _App_instances, renderHeader_fn, renderSearchResult_fn, renderPopularMovies_fn, renderFooter_fn;
+var _parentElement, _props, _SearchBar_instances, render_fn, addEventListeners_fn, _parentElement2, _props2, _Header_instances, render_fn2, renderSearchBar_fn, addEventListeners_fn2, _baseURL, _headers, _errorRenderer, _HttpClient_instances, buildUrl_fn, _client, _message, _parentElement3, _props3, _button, _MoreMoviesButton_instances, render_fn3, addEventListeners_fn3, _movies, _MovieList_instances, posterImage_fn, _movie, _parentElement4, _page, _api, _moreMoviesButton, _PopularMovieBoard_instances, renderInitialLayout_fn, fetchAndRenderMovies_fn, renderTopRatedMovie_fn, renderMovies_fn, movieData_fn, loadMoreMovies_fn, initMoreMoviesButton_fn, hideMoreMoviesButton_fn, _parentElement5, _props4, _page2, _api2, _moreMoviesButton2, _SearchMovieBoard_instances, renderInitialLayout_fn2, fetchAndRenderMovies_fn2, renderMovies_fn2, movieData_fn2, loadMoreMovies_fn2, renderNoResult_fn, initMoreMoviesButton_fn2, hideMoreMoviesButton_fn2, _App_instances, renderHeader_fn, renderSearchResult_fn, renderPopularMovies_fn, renderFooter_fn;
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -134,6 +134,72 @@ addEventListeners_fn2 = function() {
     $logo.addEventListener("click", () => __privateGet(this, _props2).onLogoClicked());
   }
 };
+class HttpClient {
+  constructor(baseURL, headers, errorRenderer) {
+    __privateAdd(this, _HttpClient_instances);
+    __privateAdd(this, _baseURL);
+    __privateAdd(this, _headers);
+    __privateAdd(this, _errorRenderer);
+    __privateSet(this, _baseURL, baseURL);
+    __privateSet(this, _headers, headers);
+    __privateSet(this, _errorRenderer, errorRenderer);
+  }
+  async get(endpoint, params) {
+    const url = __privateMethod(this, _HttpClient_instances, buildUrl_fn).call(this, endpoint, params);
+    try {
+      const res = await fetch(url, {
+        method: "GET",
+        headers: __privateGet(this, _headers)
+      });
+      if (!res.ok)
+        throw new Error(`HTTP Error: ${res.status} ${res.statusText}`);
+      return await res.json();
+    } catch (error) {
+      console.error("HttpClient GET Error:", error);
+      __privateGet(this, _errorRenderer).call(this);
+      throw error;
+    }
+  }
+}
+_baseURL = new WeakMap();
+_headers = new WeakMap();
+_errorRenderer = new WeakMap();
+_HttpClient_instances = new WeakSet();
+buildUrl_fn = function(endpoint, params) {
+  const query = params && Object.keys(params).length ? "?" + new URLSearchParams(params).toString() : "";
+  return `${__privateGet(this, _baseURL)}${endpoint}${query}`;
+};
+const _TMDBApi = class _TMDBApi {
+  constructor(client) {
+    __privateAdd(this, _client);
+    __privateSet(this, _client, client);
+  }
+  fetchPopularMovies(page = 1) {
+    return __privateGet(this, _client).get(`${_TMDBApi.BASE_URL}/movie/popular`, {
+      page,
+      language: "ko-KR"
+    });
+  }
+  searchMovies(query, page = 1) {
+    return __privateGet(this, _client).get(`${_TMDBApi.BASE_URL}/search/movie`, {
+      query,
+      page,
+      include_adult: false,
+      language: "ko-KR"
+    });
+  }
+};
+_client = new WeakMap();
+__publicField(_TMDBApi, "BASE_URL", "https://api.themoviedb.org/3");
+let TMDBApi = _TMDBApi;
+const createApi = (errorRenderer) => {
+  const headers = {
+    accept: "application/json",
+    Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYTYzYTkyNzMzZTEwODVjOGE2ZmRjODRiZGI1ZmJjNCIsIm5iZiI6MTc0MjI3NTg3Ny45NDQsInN1YiI6IjY3ZDkwNTI1YWIyNTllMDNhN2M2YTJlZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Hc9ub007PNxPdNSwS1doghQTFrfO8DItpLNnlaGQ2L0"}`
+  };
+  const client = new HttpClient("", headers, errorRenderer);
+  return new TMDBApi(client);
+};
 class ErrorScreen {
   constructor(message) {
     __privateAdd(this, _message);
@@ -155,20 +221,28 @@ class MoreMoviesButton {
     __privateAdd(this, _MoreMoviesButton_instances);
     __privateAdd(this, _parentElement3);
     __privateAdd(this, _props3);
+    __privateAdd(this, _button, null);
     __privateSet(this, _parentElement3, parentElement);
     __privateSet(this, _props3, props);
     __privateMethod(this, _MoreMoviesButton_instances, render_fn3).call(this);
     __privateMethod(this, _MoreMoviesButton_instances, addEventListeners_fn3).call(this);
   }
+  setLoading(loading) {
+    if (!__privateGet(this, _button)) return;
+    __privateGet(this, _button).disabled = loading;
+    __privateGet(this, _button).textContent = loading ? "로딩 중..." : "더보기";
+  }
 }
 _parentElement3 = new WeakMap();
 _props3 = new WeakMap();
+_button = new WeakMap();
 _MoreMoviesButton_instances = new WeakSet();
 render_fn3 = function() {
   __privateGet(this, _parentElement3).innerHTML = /*html*/
   `
         <button class="more-movies-button">더보기</button>
     `;
+  __privateSet(this, _button, __privateGet(this, _parentElement3).querySelector(".more-movies-button"));
 };
 addEventListeners_fn3 = function() {
   const moreButton = document.querySelector(".more-movies-button");
@@ -184,23 +258,16 @@ const _MovieList = class _MovieList {
     return (
       /*html*/
       `
-      ${Array.from({ length: 20 }).map(
-        () => (
-          /*html*/
-          `
-            <li>
-              <div class="skeleton-item">
-                <div class="skeleton-thumbnail"></div>
-                <div class="skeleton-item-desc">
-                  <div class="skeleton-text"></div>
-                  <div class="skeleton-text" style="width: 50%"></div>
-                </div>
-              </div>
-            </li>
-          `
-        )
-      ).join("")}
-    `
+      <li>
+        <div class="skeleton-item">
+          <div class="skeleton-thumbnail"></div>
+          <div class="skeleton-item-desc">
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text" style="width: 50%"></div>
+          </div>
+        </div>
+      </li>
+    `.repeat(10).trim()
     );
   }
   get ui() {
@@ -213,7 +280,11 @@ const _MovieList = class _MovieList {
           `
             <li>
               <div class="item">
-                <img class="thumbnail" src="${__privateMethod(this, _MovieList_instances, posterImage_fn).call(this, poster_path)}" alt="${title}" />
+                <img 
+                  class="thumbnail" 
+                  src="${__privateMethod(this, _MovieList_instances, posterImage_fn).call(this, poster_path)}" alt="${title}" 
+                  onerror="this.onerror=null; this.src='./images/dizzy_planet.png';"
+                  />
                 <div class="item-desc">
                   <p class="rate">
                     <img src="./images/star_empty.png" class="star" />
@@ -287,14 +358,20 @@ const _PopularMovieBoard = class _PopularMovieBoard {
     __privateAdd(this, _PopularMovieBoard_instances);
     __privateAdd(this, _parentElement4);
     __privateAdd(this, _page);
+    __privateAdd(this, _api);
+    __privateAdd(this, _moreMoviesButton, null);
     __privateSet(this, _parentElement4, parentElement);
     __privateSet(this, _page, 1);
+    const errorRenderer = () => new ErrorScreen("오류가 발생했습니다.").render();
+    __privateSet(this, _api, createApi(errorRenderer));
     __privateMethod(this, _PopularMovieBoard_instances, renderInitialLayout_fn).call(this);
     __privateMethod(this, _PopularMovieBoard_instances, fetchAndRenderMovies_fn).call(this);
   }
 };
 _parentElement4 = new WeakMap();
 _page = new WeakMap();
+_api = new WeakMap();
+_moreMoviesButton = new WeakMap();
 _PopularMovieBoard_instances = new WeakSet();
 renderInitialLayout_fn = function() {
   __privateGet(this, _parentElement4).innerHTML = /*html*/
@@ -309,7 +386,7 @@ renderInitialLayout_fn = function() {
       </section>
       <section class="movie-list-container">
           <h2>지금 인기 있는 영화</h2>
-          <ul class='thumbnail-list'>${new MovieList([]).ui}</ul>
+          <ul class='thumbnail-list'>${new MovieList([]).skeleton}</ul> 
           <div class="more-button-container"></div>
       </section>
     `;
@@ -336,30 +413,24 @@ renderMovies_fn = function(movies) {
   ul == null ? void 0 : ul.insertAdjacentHTML("beforeend", new MovieList(movies).ui);
 };
 movieData_fn = async function() {
-  const options = {
-    method: "GET",
-    headers: {
-      accept: "application/json",
-      Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYTYzYTkyNzMzZTEwODVjOGE2ZmRjODRiZGI1ZmJjNCIsIm5iZiI6MTc0MjI3NTg3Ny45NDQsInN1YiI6IjY3ZDkwNTI1YWIyNTllMDNhN2M2YTJlZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Hc9ub007PNxPdNSwS1doghQTFrfO8DItpLNnlaGQ2L0"}`
-    }
-  };
   try {
-    const raw = await fetch(
-      `${_PopularMovieBoard.BASE_URL}/popular?language=ko-KR&page=${__privateGet(this, _page)}`,
-      options
-    );
-    const data = await raw.json();
-    const movies = data.results;
-    return { movies, total_pages: data.total_pages };
+    const data = await __privateGet(this, _api).fetchPopularMovies(__privateGet(this, _page));
+    return {
+      movies: data.results,
+      total_pages: data.total_pages
+    };
   } catch (e) {
-    new ErrorScreen("오류가 발생했습니다.").render();
+    console.log(e);
     return { movies: [], total_pages: 0 };
   }
 };
 loadMoreMovies_fn = async function() {
+  var _a, _b;
+  (_a = __privateGet(this, _moreMoviesButton)) == null ? void 0 : _a.setLoading(true);
   __privateSet(this, _page, __privateGet(this, _page) + 1);
   const { movies: newMovies, total_pages } = await __privateMethod(this, _PopularMovieBoard_instances, movieData_fn).call(this);
   if (!newMovies) return;
+  (_b = __privateGet(this, _moreMoviesButton)) == null ? void 0 : _b.setLoading(false);
   __privateMethod(this, _PopularMovieBoard_instances, renderMovies_fn).call(this, newMovies);
   if (__privateGet(this, _page) >= _PopularMovieBoard.MAX_PAGE || __privateGet(this, _page) >= total_pages) {
     __privateMethod(this, _PopularMovieBoard_instances, hideMoreMoviesButton_fn).call(this);
@@ -368,16 +439,15 @@ loadMoreMovies_fn = async function() {
 };
 initMoreMoviesButton_fn = function() {
   const $moreMoviesButton = document.querySelector(".more-button-container");
-  if (isHTMLElement($moreMoviesButton))
-    new MoreMoviesButton($moreMoviesButton, {
-      refetchMovies: () => __privateMethod(this, _PopularMovieBoard_instances, loadMoreMovies_fn).call(this)
-    });
+  if (!isHTMLElement($moreMoviesButton)) return;
+  __privateSet(this, _moreMoviesButton, new MoreMoviesButton($moreMoviesButton, {
+    refetchMovies: () => __privateMethod(this, _PopularMovieBoard_instances, loadMoreMovies_fn).call(this)
+  }));
 };
 hideMoreMoviesButton_fn = function() {
   var _a;
   (_a = document.querySelector(".more-movies-button")) == null ? void 0 : _a.remove();
 };
-__publicField(_PopularMovieBoard, "BASE_URL", "https://api.themoviedb.org/3/movie");
 __publicField(_PopularMovieBoard, "MAX_PAGE", 500);
 let PopularMovieBoard = _PopularMovieBoard;
 const _SearchMovieBoard = class _SearchMovieBoard {
@@ -386,9 +456,13 @@ const _SearchMovieBoard = class _SearchMovieBoard {
     __privateAdd(this, _parentElement5);
     __privateAdd(this, _props4);
     __privateAdd(this, _page2);
+    __privateAdd(this, _api2);
+    __privateAdd(this, _moreMoviesButton2, null);
     __privateSet(this, _parentElement5, parentElement);
     __privateSet(this, _props4, props);
     __privateSet(this, _page2, 1);
+    const errorRenderer = () => new ErrorScreen("오류가 발생했습니다.").render();
+    __privateSet(this, _api2, createApi(errorRenderer));
     __privateMethod(this, _SearchMovieBoard_instances, renderInitialLayout_fn2).call(this);
     __privateMethod(this, _SearchMovieBoard_instances, fetchAndRenderMovies_fn2).call(this);
   }
@@ -396,6 +470,8 @@ const _SearchMovieBoard = class _SearchMovieBoard {
 _parentElement5 = new WeakMap();
 _props4 = new WeakMap();
 _page2 = new WeakMap();
+_api2 = new WeakMap();
+_moreMoviesButton2 = new WeakMap();
 _SearchMovieBoard_instances = new WeakSet();
 renderInitialLayout_fn2 = function() {
   __privateGet(this, _parentElement5).innerHTML = /*html*/
@@ -427,29 +503,22 @@ renderMovies_fn2 = function(movies) {
   }
 };
 movieData_fn2 = async function() {
-  const options = {
-    method: "GET",
-    headers: {
-      accept: "application/json",
-      Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYTYzYTkyNzMzZTEwODVjOGE2ZmRjODRiZGI1ZmJjNCIsIm5iZiI6MTc0MjI3NTg3Ny45NDQsInN1YiI6IjY3ZDkwNTI1YWIyNTllMDNhN2M2YTJlZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Hc9ub007PNxPdNSwS1doghQTFrfO8DItpLNnlaGQ2L0"}`
-    }
-  };
   try {
-    const raw = await fetch(
-      `${_SearchMovieBoard.BASE_URL}/search/movie?query=${__privateGet(this, _props4).searchParams}&include_adult=false&language=ko-KR&page=${__privateGet(this, _page2)}`,
-      options
+    const data = await __privateGet(this, _api2).searchMovies(
+      __privateGet(this, _props4).searchParams,
+      __privateGet(this, _page2)
     );
-    const data = await raw.json();
-    const movies = data.results;
-    return { movies, total_pages: data.total_pages };
+    return { movies: data.results, total_pages: data.total_pages };
   } catch (e) {
-    new ErrorScreen("오류가 발생했습니다.").render();
     return { movies: [], total_pages: 0 };
   }
 };
 loadMoreMovies_fn2 = async function() {
+  var _a, _b;
+  (_a = __privateGet(this, _moreMoviesButton2)) == null ? void 0 : _a.setLoading(true);
   __privateSet(this, _page2, __privateGet(this, _page2) + 1);
   const { movies: newMovies, total_pages } = await __privateMethod(this, _SearchMovieBoard_instances, movieData_fn2).call(this);
+  (_b = __privateGet(this, _moreMoviesButton2)) == null ? void 0 : _b.setLoading(false);
   __privateMethod(this, _SearchMovieBoard_instances, renderMovies_fn2).call(this, newMovies);
   if (newMovies.length < _SearchMovieBoard.LOAD_COUNT || __privateGet(this, _page2) >= total_pages) {
     __privateMethod(this, _SearchMovieBoard_instances, hideMoreMoviesButton_fn2).call(this);
@@ -470,16 +539,15 @@ renderNoResult_fn = function() {
 };
 initMoreMoviesButton_fn2 = function() {
   const $moreMoviesButton = document.querySelector(".more-button-container");
-  if (isHTMLElement($moreMoviesButton))
-    new MoreMoviesButton($moreMoviesButton, {
-      refetchMovies: () => __privateMethod(this, _SearchMovieBoard_instances, loadMoreMovies_fn2).call(this)
-    });
+  if (!isHTMLElement($moreMoviesButton)) return;
+  __privateSet(this, _moreMoviesButton2, new MoreMoviesButton($moreMoviesButton, {
+    refetchMovies: () => __privateMethod(this, _SearchMovieBoard_instances, loadMoreMovies_fn2).call(this)
+  }));
 };
 hideMoreMoviesButton_fn2 = function() {
   var _a;
   (_a = document.querySelector(".more-movies-button")) == null ? void 0 : _a.remove();
 };
-__publicField(_SearchMovieBoard, "BASE_URL", "https://api.themoviedb.org/3");
 __publicField(_SearchMovieBoard, "LOAD_COUNT", 20);
 let SearchMovieBoard = _SearchMovieBoard;
 class App {
