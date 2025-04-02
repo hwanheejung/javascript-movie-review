@@ -9,7 +9,7 @@ var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read fr
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
-var _parentElement, _props, _SearchBar_instances, render_fn, addEventListeners_fn, _parentElement2, _props2, _Header_instances, render_fn2, renderSearchBar_fn, addEventListeners_fn2, _baseURL, _headers, _errorRenderer, _HttpClient_instances, buildUrl_fn, _client, _message, _year, _month, _date, _RATING_MESSAGES, _movieId, _MyRate_instances, updateStarUI_fn, _myRate, _MovieDetailModalContent_instances, initialRender_fn, imageSection_fn, descriptionSection_fn, mainInfoSection_fn, overviewSection_fn, attachMyRateEvents_fn, _dialogElement, _api, _MovieDetailModal_instances, dialogTemplate_fn, attachEventListeners_fn, fetchAndDisplayDetail_fn, updateModalContent_fn, renderError_fn, close_fn, _movies, _MovieList_instances, posterImage_fn, _BaseMovieBoard_instances, initialize_fn, attachMovieItemClickListener_fn, renderNoResult_fn, _movie, _App_instances, renderInitialLayout_fn, renderHeader_fn, renderSearchResult_fn, renderPopularMovies_fn;
+var _parentElement, _props, _SearchBar_instances, render_fn, addEventListeners_fn, _parentElement2, _props2, _Header_instances, render_fn2, renderSearchBar_fn, addEventListeners_fn2, _baseURL, _headers, _errorRenderer, _HttpClient_instances, buildUrl_fn, _client, _year, _month, _date, _RATING_MESSAGES, _movieId, _MyRate_instances, updateStarUI_fn, _myRate, _MovieDetailModalContent_instances, initialRender_fn, imageSection_fn, descriptionSection_fn, mainInfoSection_fn, overviewSection_fn, attachMyRateEvents_fn, _dialogElement, _api, _MovieDetailModal_instances, dialogTemplate_fn, attachEventListeners_fn, fetchAndDisplayDetail_fn, updateModalContent_fn, renderError_fn, close_fn, _movies, _MovieList_instances, posterImage_fn, _scrollManager, _BaseMovieBoard_instances, initialize_fn, attachMovieItemClickListener_fn, renderNoResult_fn, _message, _movie, _App_instances, renderInitialLayout_fn, renderHeader_fn, renderSearchResult_fn, renderPopularMovies_fn;
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -172,34 +172,41 @@ buildUrl_fn = function(endpoint, params) {
   const query = params && Object.keys(params).length ? "?" + new URLSearchParams(params).toString() : "";
   return `${__privateGet(this, _baseURL)}${endpoint}${query}`;
 };
-const _TMDBApi = class _TMDBApi {
+class TMDBApi {
   constructor(client) {
     __privateAdd(this, _client);
     __privateSet(this, _client, client);
   }
   popularMovies(page = 1) {
-    return __privateGet(this, _client).get(`${_TMDBApi.BASE_URL}/movie/popular`, {
-      page,
-      language: "ko-KR"
-    });
+    return __privateGet(this, _client).get(
+      `${"https://api.themoviedb.org/3"}/movie/popular`,
+      {
+        page,
+        language: "ko-KR"
+      }
+    );
   }
   searchedMovies(query, page = 1) {
-    return __privateGet(this, _client).get(`${_TMDBApi.BASE_URL}/search/movie`, {
-      query,
-      page,
-      include_adult: false,
-      language: "ko-KR"
-    });
+    return __privateGet(this, _client).get(
+      `${"https://api.themoviedb.org/3"}/search/movie`,
+      {
+        query,
+        page,
+        include_adult: false,
+        language: "ko-KR"
+      }
+    );
   }
   movieDetail(id) {
-    return __privateGet(this, _client).get(`${_TMDBApi.BASE_URL}/movie/${id}`, {
-      language: "ko-KR"
-    });
+    return __privateGet(this, _client).get(
+      `${"https://api.themoviedb.org/3"}/movie/${id}`,
+      {
+        language: "ko-KR"
+      }
+    );
   }
-};
+}
 _client = new WeakMap();
-__publicField(_TMDBApi, "BASE_URL", "https://api.themoviedb.org/3");
-let TMDBApi = _TMDBApi;
 const createApi = (errorRenderer) => {
   const headers = {
     accept: "application/json",
@@ -225,22 +232,6 @@ const Spinner = (scale = 1) => {
   `
   );
 };
-class ErrorScreen {
-  constructor(message) {
-    __privateAdd(this, _message);
-    __privateSet(this, _message, message);
-  }
-  render() {
-    const $main = document.querySelector("main");
-    if (!isHTMLElement($main)) return;
-    $main.innerHTML = /*html*/
-    `<div class="fallback-screen error-screen">
-        <img src="./images/dizzy_planet.png"/>
-        <p>${__privateGet(this, _message)}</p>
-      </div>`;
-  }
-}
-_message = new WeakMap();
 class Date {
   constructor(dateString) {
     __privateAdd(this, _year);
@@ -454,9 +445,7 @@ class MovieDetailModal {
   constructor(movieId) {
     __privateAdd(this, _MovieDetailModal_instances);
     __privateAdd(this, _dialogElement);
-    __privateAdd(this, _api, createApi(
-      () => new ErrorScreen("상세 정보를 불러오는 중 오류가 발생했습니다.").render()
-    ));
+    __privateAdd(this, _api, createApi(() => __privateMethod(this, _MovieDetailModal_instances, renderError_fn).call(this)));
     this.movieId = movieId;
     __privateSet(this, _dialogElement, __privateMethod(this, _MovieDetailModal_instances, dialogTemplate_fn).call(this));
     document.body.appendChild(__privateGet(this, _dialogElement));
@@ -511,7 +500,6 @@ fetchAndDisplayDetail_fn = async function() {
     __privateMethod(this, _MovieDetailModal_instances, updateModalContent_fn).call(this, detail);
   } catch (error) {
     console.error("영화 상세 정보를 불러오는 중 오류 발생:", error);
-    __privateMethod(this, _MovieDetailModal_instances, renderError_fn).call(this);
   }
 };
 updateModalContent_fn = function(detail) {
@@ -547,9 +535,12 @@ const _MovieList = class _MovieList {
             <li class="item" data-id="${id}">
                 <img 
                   class="thumbnail" 
-                  src="${__privateMethod(this, _MovieList_instances, posterImage_fn).call(this, poster_path)}" alt="${title}" 
+                  src="./images/placeholder.png"
+                  data-src="${__privateMethod(this, _MovieList_instances, posterImage_fn).call(this, poster_path)}"
+                  alt="${title}" 
+                  onload="if(this.dataset.loaded !== 'true'){ this.dataset.loaded = 'true'; this.src = this.getAttribute('data-src'); }"
                   onerror="this.onerror=null; this.src='./images/dizzy_planet.png';"
-                  />
+                />
                 <div class="item-desc">
                   <p class="rate">
                     <img src="./images/star_empty.png" class="star" />
@@ -599,6 +590,37 @@ posterImage_fn = function(poster_path) {
 };
 __publicField(_MovieList, "IMAGE_BASE_URL", "https://image.tmdb.org/t/p/original");
 let MovieList = _MovieList;
+class InfiniteScrollManager {
+  constructor(parent, onIntersect) {
+    __publicField(this, "observer", null);
+    __publicField(this, "sentinel");
+    this.parent = parent;
+    this.onIntersect = onIntersect;
+    this.sentinel = document.createElement("div");
+    this.sentinel.className = "scroll-sentinel";
+    this.parent.appendChild(this.sentinel);
+    this.initObserver();
+  }
+  initObserver() {
+    this.observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          this.onIntersect();
+        }
+      });
+    });
+    this.observer.observe(this.sentinel);
+  }
+  disconnect() {
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+    if (isHTMLElement(this.sentinel)) {
+      this.sentinel.remove();
+    }
+  }
+}
 class BaseMovieBoard {
   constructor(config) {
     __privateAdd(this, _BaseMovieBoard_instances);
@@ -606,7 +628,7 @@ class BaseMovieBoard {
     __publicField(this, "currentPage", 1);
     __publicField(this, "totalPages", 0);
     __publicField(this, "isLoading", false);
-    __publicField(this, "observer", null);
+    __privateAdd(this, _scrollManager, null);
     this.config = config;
     this.parentElement = config.parentElement;
     __privateMethod(this, _BaseMovieBoard_instances, initialize_fn).call(this);
@@ -614,6 +636,9 @@ class BaseMovieBoard {
   async fetchAndRenderMovies() {
     if (this.isLoading) return;
     this.isLoading = true;
+    if (this.currentPage > 1) {
+      this.renderSkeleton();
+    }
     try {
       const { movies, total_pages } = await this.config.fetchMovies(
         this.currentPage
@@ -624,6 +649,7 @@ class BaseMovieBoard {
         this.disableInfiniteScroll();
         return;
       }
+      this.removeSkeleton();
       this.renderMovies(movies);
       this.currentPage++;
       if (this.currentPage > this.totalPages) {
@@ -648,29 +674,34 @@ class BaseMovieBoard {
       );
     }
   }
+  renderSkeleton() {
+    const movieListContainer = this.parentElement.querySelector(".thumbnail-list");
+    if (!isHTMLElement(movieListContainer)) return;
+    movieListContainer.insertAdjacentHTML(
+      "beforeend",
+      new MovieList([]).skeleton
+    );
+  }
+  removeSkeleton() {
+    const movieListContainer = this.parentElement.querySelector(".thumbnail-list");
+    if (!isHTMLElement(movieListContainer)) return;
+    movieListContainer.querySelectorAll(".skeleton-item").forEach((el) => el.remove());
+  }
   initInfiniteScroll() {
-    const sentinel = document.createElement("div");
-    sentinel.className = "scroll-sentinel";
-    this.parentElement.appendChild(sentinel);
-    this.observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && !this.isLoading && this.currentPage <= this.totalPages) {
-          this.fetchAndRenderMovies();
-        }
-      });
-    });
-    this.observer.observe(sentinel);
+    __privateSet(this, _scrollManager, new InfiniteScrollManager(this.parentElement, () => {
+      if (!this.isLoading && this.currentPage <= this.totalPages) {
+        this.fetchAndRenderMovies();
+      }
+    }));
   }
   disableInfiniteScroll() {
-    if (!this.observer) return;
-    this.observer.disconnect();
-    this.observer = null;
-    const sentinel = this.parentElement.querySelector(".scroll-sentinel");
-    if (sentinel && isHTMLElement(sentinel)) {
-      sentinel.remove();
+    if (__privateGet(this, _scrollManager)) {
+      __privateGet(this, _scrollManager).disconnect();
+      __privateSet(this, _scrollManager, null);
     }
   }
 }
+_scrollManager = new WeakMap();
 _BaseMovieBoard_instances = new WeakSet();
 initialize_fn = function() {
   this.config.initialRender();
@@ -708,6 +739,22 @@ renderNoResult_fn = function() {
   if (!isHTMLElement(h2)) return;
   h2.insertAdjacentHTML("afterend", new MovieList([]).fallback);
 };
+class ErrorScreen {
+  constructor(message) {
+    __privateAdd(this, _message);
+    __privateSet(this, _message, message);
+  }
+  render() {
+    const $main = document.querySelector("main");
+    if (!isHTMLElement($main)) return;
+    $main.innerHTML = /*html*/
+    `<div class="fallback-screen error-screen">
+        <img src="./images/dizzy_planet.png"/>
+        <p>${__privateGet(this, _message)}</p>
+      </div>`;
+  }
+}
+_message = new WeakMap();
 const _TopRatedMovie = class _TopRatedMovie {
   constructor(movie) {
     __privateAdd(this, _movie);
